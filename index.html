@@ -34,6 +34,7 @@
           <a class="footer__link" href="/">Условия использования</a>
         </li>
       </ul>
+
       <div class="footer__copyright">© 1997–2023 ООО «Яндекс»</div>
     </footer>
 
@@ -41,12 +42,15 @@
     <script defer src="vendors/babel.min.js"></script>
     <script type="text/babel">
       function Header() {
-        const [expanded, setExpanded] = React.useState(false);
-        const [toggled, setToggled] = React.useState(false);
+        let [expanded, setExpanded] = React.useState(false);
+        let [toggled, setToggled] = React.useState(false);
 
         const onClick = () => {
-          setToggled((prevState) => !prevState);
-          setExpanded((prevExpanded) => !prevExpanded);
+          if (!toggled) {
+            setToggled(true);
+          }
+
+          setExpanded(!expanded);
         };
 
         return (
@@ -62,9 +66,11 @@
               </span>
             </button>
             <ul
-              className={`header__links${
-                expanded ? " header__links_opened" : ""
-              }${toggled ? " header__links-toggled" : ""}`}
+              className={
+                "header__links" +
+                (expanded ? " header__links_opened" : "") +
+                (toggled ? " header__links-toggled" : "")
+              }
             >
               <li className="header__item">
                 <a
@@ -90,21 +96,21 @@
         );
       }
 
-      const Event = React.memo(function Event(props) {
-        const ref = React.useRef(null);
+      function Event(props) {
+        const ref = React.useRef();
 
         const { onSize } = props;
 
         React.useEffect(() => {
+          const width = ref.current.offsetWidth;
+          const height = ref.current.offsetHeight;
           if (onSize) {
-            const width = ref.current.offsetWidth;
-            const height = ref.current.offsetHeight;
             onSize({ width, height });
           }
-        }, [onSize]);
+        });
 
         return (
-          <li ref={ref} className={`event${props.slim ? " event_slim" : ""}`}>
+          <li ref={ref} className={"event" + (props.slim ? " event_slim" : "")}>
             <button className="event__button">
               <span
                 className={`event__icon event__icon_${props.icon}`}
@@ -118,42 +124,177 @@
             </button>
           </li>
         );
-      });
+      }
+
+      const TABS = {
+        all: {
+          title: "Все",
+          items: [
+            {
+              icon: "light2",
+              iconLabel: "Освещение",
+              title: "Xiaomi Yeelight LED Smart Bulb",
+              subtitle: "Включено",
+            },
+            {
+              icon: "light",
+              iconLabel: "Освещение",
+              title: "D-Link Omna 180 Cam",
+              subtitle: "Включится в 17:00",
+            },
+            {
+              icon: "temp",
+              iconLabel: "Температура",
+              title: "Elgato Eve Degree Connected",
+              subtitle: "Выключено до 17:00",
+            },
+            {
+              icon: "light",
+              iconLabel: "Освещение",
+              title: "LIFX Mini Day & Dusk A60 E27",
+              subtitle: "Включится в 17:00",
+            },
+            {
+              icon: "light2",
+              iconLabel: "Освещение",
+              title: "Xiaomi Mi Air Purifier 2S",
+              subtitle: "Включено",
+            },
+            {
+              icon: "light",
+              iconLabel: "Освещение",
+              title: "Philips Zhirui",
+              subtitle: "Включено",
+            },
+            {
+              icon: "light",
+              iconLabel: "Освещение",
+              title: "Philips Zhirui",
+              subtitle: "Включено",
+            },
+            {
+              icon: "light2",
+              iconLabel: "Освещение",
+              title: "Xiaomi Mi Air Purifier 2S",
+              subtitle: "Включено",
+            },
+          ],
+        },
+        kitchen: {
+          title: "Кухня",
+          items: [
+            {
+              icon: "light2",
+              iconLabel: "Освещение",
+              title: "Xiaomi Yeelight LED Smart Bulb",
+              subtitle: "Включено",
+            },
+            {
+              icon: "temp",
+              iconLabel: "Температура",
+              title: "Elgato Eve Degree Connected",
+              subtitle: "Выключено до 17:00",
+            },
+          ],
+        },
+        hall: {
+          title: "Зал",
+          items: [
+            {
+              icon: "light",
+              iconLabel: "Освещение",
+              title: "Philips Zhirui",
+              subtitle: "Выключено",
+            },
+            {
+              icon: "light2",
+              iconLabel: "Освещение",
+              title: "Xiaomi Mi Air Purifier 2S",
+              subtitle: "Выключено",
+            },
+          ],
+        },
+        lights: {
+          title: "Лампочки",
+          items: [
+            {
+              icon: "light",
+              iconLabel: "Освещение",
+              title: "D-Link Omna 180 Cam",
+              subtitle: "Включится в 17:00",
+            },
+            {
+              icon: "light",
+              iconLabel: "Освещение",
+              title: "LIFX Mini Day & Dusk A60 E27",
+              subtitle: "Включится в 17:00",
+            },
+            {
+              icon: "light2",
+              iconLabel: "Освещение",
+              title: "Xiaomi Mi Air Purifier 2S",
+              subtitle: "Включено",
+            },
+            {
+              icon: "light",
+              iconLabel: "Освещение",
+              title: "Philips Zhirui",
+              subtitle: "Включено",
+            },
+          ],
+        },
+        cameras: {
+          title: "Камеры",
+          items: [
+            {
+              icon: "light2",
+              iconLabel: "Освещение",
+              title: "Xiaomi Mi Air Purifier 2S",
+              subtitle: "Включено",
+            },
+          ],
+        },
+      };
+      for (let i = 0; i < 6; ++i) {
+        TABS.all.items = [...TABS.all.items, ...TABS.all.items];
+      }
+      const TABS_KEYS = Object.keys(TABS);
 
       function Main() {
         const ref = React.useRef();
+        const initedRef = React.useRef(false);
         const [activeTab, setActiveTab] = React.useState("");
         const [hasRightScroll, setHasRightScroll] = React.useState(false);
 
         React.useEffect(() => {
-          if (!activeTab) {
-            const defaultTab =
-              new URLSearchParams(location.search).get("tab") || "all";
-            setActiveTab(defaultTab);
+          if (!activeTab && !initedRef.current) {
+            initedRef.current = true;
+            setActiveTab(
+              new URLSearchParams(location.search).get("tab") || "all"
+            );
           }
-        }, [activeTab]);
+        });
 
-        const onSelectInput = React.useCallback((event) => {
+        const onSelectInput = (event) => {
           setActiveTab(event.target.value);
-        }, []);
+        };
 
-        const sizes = React.useRef([]);
-        const onSize = React.useCallback((size) => {
-          sizes.current = [...sizes.current, size];
-        }, []);
+        let sizes = [];
+        const onSize = (size) => {
+          sizes = [...sizes, size];
+        };
 
         React.useEffect(() => {
-          const sumWidth = sizes.current.reduce(
-            (acc, item) => acc + item.width,
-            0
-          );
+          const sumWidth = sizes.reduce((acc, item) => acc + item.width, 0);
+          const sumHeight = sizes.reduce((acc, item) => acc + item.height, 0);
+
           const newHasRightScroll = sumWidth > ref.current.offsetWidth;
           if (newHasRightScroll !== hasRightScroll) {
             setHasRightScroll(newHasRightScroll);
           }
-        }, [hasRightScroll]);
+        });
 
-        const onArrowClick = React.useCallback(() => {
+        const onArrowCLick = () => {
           const scroller = ref.current.querySelector(
             ".section__panel:not(.section__panel_hidden)"
           );
@@ -163,142 +304,7 @@
               behavior: "smooth",
             });
           }
-        }, []);
-
-        const TABS = React.useMemo(
-          () => ({
-            all: {
-              title: "Все",
-              items: [
-                {
-                  icon: "light2",
-                  iconLabel: "Освещение",
-                  title: "Xiaomi Yeelight LED Smart Bulb",
-                  subtitle: "Включено",
-                },
-                {
-                  icon: "light",
-                  iconLabel: "Освещение",
-                  title: "D-Link Omna 180 Cam",
-                  subtitle: "Включится в 17:00",
-                },
-                {
-                  icon: "temp",
-                  iconLabel: "Температура",
-                  title: "Elgato Eve Degree Connected",
-                  subtitle: "Выключено до 17:00",
-                },
-                {
-                  icon: "light",
-                  iconLabel: "Освещение",
-                  title: "LIFX Mini Day & Dusk A60 E27",
-                  subtitle: "Включится в 17:00",
-                },
-                {
-                  icon: "light2",
-                  iconLabel: "Освещение",
-                  title: "Xiaomi Mi Air Purifier 2S",
-                  subtitle: "Включено",
-                },
-                {
-                  icon: "light",
-                  iconLabel: "Освещение",
-                  title: "Philips Zhirui",
-                  subtitle: "Включено",
-                },
-                {
-                  icon: "light",
-                  iconLabel: "Освещение",
-                  title: "Philips Zhirui",
-                  subtitle: "Включено",
-                },
-                {
-                  icon: "light2",
-                  iconLabel: "Освещение",
-                  title: "Xiaomi Mi Air Purifier 2S",
-                  subtitle: "Включено",
-                },
-              ],
-            },
-            kitchen: {
-              title: "Кухня",
-              items: [
-                {
-                  icon: "light2",
-                  iconLabel: "Освещение",
-                  title: "Xiaomi Yeelight LED Smart Bulb",
-                  subtitle: "Включено",
-                },
-                {
-                  icon: "temp",
-                  iconLabel: "Температура",
-                  title: "Elgato Eve Degree Connected",
-                  subtitle: "Выключено до 17:00",
-                },
-              ],
-            },
-            hall: {
-              title: "Зал",
-              items: [
-                {
-                  icon: "light",
-                  iconLabel: "Освещение",
-                  title: "Philips Zhirui",
-                  subtitle: "Выключено",
-                },
-                {
-                  icon: "light2",
-                  iconLabel: "Освещение",
-                  title: "Xiaomi Mi Air Purifier 2S",
-                  subtitle: "Выключено",
-                },
-              ],
-            },
-            lights: {
-              title: "Лампочки",
-              items: [
-                {
-                  icon: "light",
-                  iconLabel: "Освещение",
-                  title: "D-Link Omna 180 Cam",
-                  subtitle: "Включится в 17:00",
-                },
-                {
-                  icon: "light",
-                  iconLabel: "Освещение",
-                  title: "LIFX Mini Day & Dusk A60 E27",
-                  subtitle: "Включится в 17:00",
-                },
-                {
-                  icon: "light2",
-                  iconLabel: "Освещение",
-                  title: "Xiaomi Mi Air Purifier 2S",
-                  subtitle: "Включено",
-                },
-                {
-                  icon: "light",
-                  iconLabel: "Освещение",
-                  title: "Philips Zhirui",
-                  subtitle: "Включено",
-                },
-              ],
-            },
-            cameras: {
-              title: "Камеры",
-              items: [
-                {
-                  icon: "light2",
-                  iconLabel: "Освещение",
-                  title: "Xiaomi Mi Air Purifier 2S",
-                  subtitle: "Включено",
-                },
-              ],
-            },
-          }),
-          []
-        );
-
-        const TABS_KEYS = React.useMemo(() => Object.keys(TABS), [TABS]);
+        };
 
         return (
           <main className="main">
@@ -316,13 +322,15 @@
                     <li className="hero-dashboard__item">
                       <div className="hero-dashboard__item-title">Дома</div>
                       <div className="hero-dashboard__item-details">
-                        +23<span className="a11y-hidden">°</span>
+                        +23
+                        <span className="a11y-hidden">°</span>
                       </div>
                     </li>
                     <li className="hero-dashboard__item">
                       <div className="hero-dashboard__item-title">За окном</div>
                       <div className="hero-dashboard__item-details">
-                        +19<span className="a11y-hidden">°</span>
+                        +19
+                        <span className="a11y-hidden">°</span>
                         <div
                           className="hero-dashboard__icon hero-dashboard__icon_rain"
                           role="img"
@@ -345,13 +353,21 @@
                     title="Xiaomi Yeelight LED Smart Bulb"
                     subtitle="Включится в 17:00"
                   />
+                  <Event
+                    icon="light"
+                    iconLabel="Освещение"
+                    title="Xiaomi Yeelight LED Smart Bulb"
+                    subtitle="Включится в 17:00"
+                  />
                 </ul>
               </div>
             </section>
+
             <section className="section main__scripts">
               <h2 className="section__title section__title-header">
                 Избранные сценарии
               </h2>
+
               <ul className="event-grid">
                 <Event
                   slim={true}
@@ -386,9 +402,11 @@
                 />
               </ul>
             </section>
+
             <section className="section main__devices">
               <div className="section__title">
                 <h2 className="section__title-header">Избранные устройства</h2>
+
                 <select
                   className="section__select"
                   defaultValue="all"
@@ -400,6 +418,7 @@
                     </option>
                   ))}
                 </select>
+
                 <ul role="tablist" className="section__tabs">
                   {TABS_KEYS.map((key) => (
                     <li
@@ -407,9 +426,10 @@
                       role="tab"
                       aria-selected={key === activeTab ? "true" : "false"}
                       tabIndex={key === activeTab ? "0" : undefined}
-                      className={`section__tab${
-                        key === activeTab ? " section__tab_active" : ""
-                      }`}
+                      className={
+                        "section__tab" +
+                        (key === activeTab ? " section__tab_active" : "")
+                      }
                       id={`tab_${key}`}
                       aria-controls={`panel_${key}`}
                       onClick={() => setActiveTab(key)}
@@ -419,14 +439,16 @@
                   ))}
                 </ul>
               </div>
+
               <div className="section__panel-wrapper" ref={ref}>
                 {TABS_KEYS.map((key) => (
                   <div
                     key={key}
                     role="tabpanel"
-                    className={`section__panel${
-                      key === activeTab ? "" : " section__panel_hidden"
-                    }`}
+                    className={
+                      "section__panel" +
+                      (key === activeTab ? "" : " section__panel_hidden")
+                    }
                     aria-hidden={key === activeTab ? "false" : "true"}
                     id={`panel_${key}`}
                     aria-labelledby={`tab_${key}`}
@@ -439,7 +461,7 @@
                   </div>
                 ))}
                 {hasRightScroll && (
-                  <div className="section__arrow" onClick={onArrowClick}></div>
+                  <div className="section__arrow" onClick={onArrowCLick}></div>
                 )}
               </div>
             </section>
